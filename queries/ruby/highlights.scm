@@ -290,13 +290,65 @@
 
 ((comment) @vim_ruby.magic_comment
   (#lua-match? @vim_ruby.magic_comment "^#%s*[Cc][Oo][Dd][Ii][Nn][Gg]:")
+  (#ruby-magic-comment! @vim_ruby.magic_comment "key")
   (#set! priority 120))
 ((comment) @vim_ruby.magic_comment
   (#lua-match? @vim_ruby.magic_comment "^#%s*[Ee][Nn][Cc][Oo][Dd][Ii][Nn][Gg]:")
+  (#ruby-magic-comment! @vim_ruby.magic_comment "key")
   (#set! priority 120))
 ((comment) @vim_ruby.magic_comment
   (#lua-match? @vim_ruby.magic_comment "^#%s*[Ff][Rr][Oo][Zz][Ee][Nn][-_][Ss][Tt][Rr][Ii][Nn][Gg][-_][Ll][Ii][Tt][Ee][Rr][Aa][Ll]:")
+  (#ruby-magic-comment! @vim_ruby.magic_comment "key")
   (#set! priority 120))
+((comment) @vim_ruby.magic_comment
+  (#lua-match? @vim_ruby.magic_comment "^#%s*[Ww][Aa][Rr][Nn][-_][Ii][Nn][Dd][Ee][Nn][Tt]:")
+  (#ruby-magic-comment! @vim_ruby.magic_comment "key")
+  (#set! priority 120))
+((comment) @vim_ruby.magic_comment
+  (#lua-match? @vim_ruby.magic_comment "^#%s*[Ww][Aa][Rr][Nn][-_][Pp][Aa][Ss][Tt][-_][Ss][Cc][Oo][Pp][Ee]:")
+  (#ruby-magic-comment! @vim_ruby.magic_comment "key")
+  (#set! priority 120))
+((comment) @vim_ruby.magic_comment
+  (#lua-match? @vim_ruby.magic_comment "^#%s*[Ss][Hh][Aa][Rr][Ee][Aa][Bb][Ll][Ee][-_][Cc][Oo][Nn][Ss][Tt][Aa][Nn][Tt][-_][Vv][Aa][Ll][Uu][Ee]:")
+  (#ruby-magic-comment! @vim_ruby.magic_comment "key")
+  (#set! priority 120))
+
+((comment) @vim_ruby.boolean
+  (#lua-match? @vim_ruby.boolean "^#%s*[Ff][Rr][Oo][Zz][Ee][Nn][-_][Ss][Tt][Rr][Ii][Nn][Gg][-_][Ll][Ii][Tt][Ee][Rr][Aa][Ll]:%s*[Tt][Rr][Uu][Ee]")
+  (#ruby-magic-comment! @vim_ruby.boolean "boolean")
+  (#set! priority 121))
+((comment) @vim_ruby.boolean
+  (#lua-match? @vim_ruby.boolean "^#%s*[Ff][Rr][Oo][Zz][Ee][Nn][-_][Ss][Tt][Rr][Ii][Nn][Gg][-_][Ll][Ii][Tt][Ee][Rr][Aa][Ll]:%s*[Ff][Aa][Ll][Ss][Ee]")
+  (#ruby-magic-comment! @vim_ruby.boolean "boolean")
+  (#set! priority 121))
+((comment) @vim_ruby.boolean
+  (#lua-match? @vim_ruby.boolean "^#%s*[Ww][Aa][Rr][Nn][-_][Ii][Nn][Dd][Ee][Nn][Tt]:%s*[Tt][Rr][Uu][Ee]")
+  (#ruby-magic-comment! @vim_ruby.boolean "boolean")
+  (#set! priority 121))
+((comment) @vim_ruby.boolean
+  (#lua-match? @vim_ruby.boolean "^#%s*[Ww][Aa][Rr][Nn][-_][Ii][Nn][Dd][Ee][Nn][Tt]:%s*[Ff][Aa][Ll][Ss][Ee]")
+  (#ruby-magic-comment! @vim_ruby.boolean "boolean")
+  (#set! priority 121))
+((comment) @vim_ruby.boolean
+  (#lua-match? @vim_ruby.boolean "^#%s*[Ww][Aa][Rr][Nn][-_][Pp][Aa][Ss][Tt][-_][Ss][Cc][Oo][Pp][Ee]:%s*[Tt][Rr][Uu][Ee]")
+  (#ruby-magic-comment! @vim_ruby.boolean "boolean")
+  (#set! priority 121))
+((comment) @vim_ruby.boolean
+  (#lua-match? @vim_ruby.boolean "^#%s*[Ww][Aa][Rr][Nn][-_][Pp][Aa][Ss][Tt][-_][Ss][Cc][Oo][Pp][Ee]:%s*[Ff][Aa][Ll][Ss][Ee]")
+  (#ruby-magic-comment! @vim_ruby.boolean "boolean")
+  (#set! priority 121))
+((comment) @vim_ruby.encoding
+  (#lua-match? @vim_ruby.encoding "^#%s*[Cc][Oo][Dd][Ii][Nn][Gg]:%s*%S+")
+  (#ruby-magic-comment! @vim_ruby.encoding "encoding")
+  (#set! priority 121))
+((comment) @vim_ruby.encoding
+  (#lua-match? @vim_ruby.encoding "^#%s*[Ee][Nn][Cc][Oo][Dd][Ii][Nn][Gg]:%s*%S+")
+  (#ruby-magic-comment! @vim_ruby.encoding "encoding")
+  (#set! priority 121))
+((comment) @vim_ruby.encoding
+  (#lua-match? @vim_ruby.encoding "^#%s*[Ss][Hh][Aa][Rr][Ee][Aa][Bb][Ll][Ee][-_][Cc][Oo][Nn][Ss][Tt][Aa][Nn][Tt][-_][Vv][Aa][Ll][Uu][Ee]:%s*%S+")
+  (#ruby-magic-comment! @vim_ruby.encoding "encoding")
+  (#set! priority 121))
 
 ((comment) @vim_ruby.todo
   (#lua-match? @vim_ruby.todo "FIXME")

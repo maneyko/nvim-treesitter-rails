@@ -42,11 +42,95 @@ local function any_match(bufnr, patterns)
   return false
 end
 
+local magic_comment_keys = {
+  coding = true,
+  encoding = true,
+  frozen_string_literal = true,
+  shareable_constant_value = true,
+  warn_indent = true,
+  warn_past_scope = true,
+}
+
+local function parse_magic_comment(text)
+  local _, prefix_end = text:find("^#%s*")
+  if not prefix_end then
+    return nil
+  end
+
+  local key_start = prefix_end + 1
+  local key_end = text:find(":", key_start, true)
+  if not key_end then
+    return nil
+  end
+
+  local key = text:sub(key_start, key_end - 1):lower():gsub("-", "_")
+  if not magic_comment_keys[key] then
+    return nil
+  end
+
+  local value_start, value_end = text:find("%S+", key_end + 1)
+  local value = value_start and text:sub(value_start, value_end) or nil
+
+  return {
+    key_start = key_start,
+    key_end = key_end,
+    value_start = value_start,
+    value_end = value_end,
+    value = value,
+  }
+end
+
+local function is_boolean_string(value)
+  return value ~= nil and (value:lower() == "true" or value:lower() == "false")
+end
+
+local function set_magic_comment_range(match, bufnr, pred, metadata)
+  local capture_id = pred[2]
+  local part = pred[3]
+  local nodes = match[capture_id]
+  if type(capture_id) ~= "number" or not nodes or not nodes[1] then
+    return
+  end
+
+  local node = nodes[1]
+  local parsed = parse_magic_comment(vim.treesitter.get_node_text(node, bufnr) or "")
+  if not parsed then
+    return
+  end
+
+  local start_col_offset, end_col_offset
+  if part == "key" then
+    start_col_offset = parsed.key_start - 1
+    end_col_offset = parsed.key_end
+  elseif part == "boolean" and is_boolean_string(parsed.value) then
+    start_col_offset = parsed.value_start - 1
+    end_col_offset = parsed.value_end
+  elseif part == "encoding" and parsed.value and not is_boolean_string(parsed.value) then
+    start_col_offset = parsed.value_start - 1
+    end_col_offset = parsed.value_end
+  else
+    return
+  end
+
+  local start_row, start_col = node:range()
+  metadata[capture_id] = metadata[capture_id] or {}
+  metadata[capture_id].range = {
+    start_row,
+    start_col + start_col_offset,
+    start_row,
+    start_col + end_col_offset,
+  }
+end
+
 function M.setup()
   if did_setup then
     return
   end
   did_setup = true
+
+  vim.treesitter.query.add_directive("ruby-magic-comment!", function(match, _, bufnr, pred, metadata)
+    set_magic_comment_range(match, bufnr, pred, metadata)
+  end, { force = true })
 
   vim.treesitter.query.add_predicate("is-rspec?", function(_, _, bufnr, _)
     return ends(bufnr, "_spec.rb") or has(bufnr, "/spec/")

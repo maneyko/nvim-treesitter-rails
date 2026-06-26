@@ -14,6 +14,7 @@ local defaults = {
   ["@vim_ruby.control.ruby"]                  = "Statement",
   ["@vim_ruby.data.ruby"]                     = "Comment",
   ["@vim_ruby.define.ruby"]                   = "Define",
+  ["@vim_ruby.encoding.ruby"]                 = "Constant",
   ["@vim_ruby.eval.ruby"]                     = "Statement",
   ["@vim_ruby.exception.ruby"]                = "Exception",
   ["@vim_ruby.exception_handler.ruby"]        = "Conditional",

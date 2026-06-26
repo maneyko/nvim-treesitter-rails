@@ -71,6 +71,7 @@ The plugin defines default highlight links for these captures:
 - `@vim_ruby.control.ruby`
 - `@vim_ruby.data.ruby`
 - `@vim_ruby.define.ruby`
+- `@vim_ruby.encoding.ruby`
 - `@vim_ruby.eval.ruby`
 - `@vim_ruby.exception.ruby`
 - `@vim_ruby.exception_handler.ruby`
