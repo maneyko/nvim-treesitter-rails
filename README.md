@@ -1,10 +1,11 @@
 # nvim-treesitter-rails
 
-A small Neovim plugin that ports the Rails/RSpec/Minitest highlighting portions of
+A small Neovim plugin that ports the highlighting portions of Vim's Ruby syntax
+file plus the Rails/RSpec/Minitest highlighting portions of
 [tpope/vim-rails](https://github.com/tpope/vim-rails) to Treesitter queries.
 
-This plugin does **not** attempt to replace `vim-rails` navigation/commands. It only
-adds Rails-aware Treesitter highlight captures for Ruby files.
+This plugin does **not** attempt to replace `vim-rails` navigation/commands. It adds
+Ruby/Rails-aware Treesitter highlight captures for Ruby files.
 
 ## Requirements
 
@@ -54,6 +55,53 @@ require("treesitter-rails").setup({
 ## Captures
 
 The plugin defines default highlight links for these captures:
+
+### Vim Ruby syntax captures
+
+- `@vim_ruby.access.ruby`
+- `@vim_ruby.attribute.ruby`
+- `@vim_ruby.begin_end.ruby`
+- `@vim_ruby.boolean.ruby`
+- `@vim_ruby.class.ruby`
+- `@vim_ruby.class_name.ruby`
+- `@vim_ruby.class_variable.ruby`
+- `@vim_ruby.comment.documentation.ruby`
+- `@vim_ruby.conditional.ruby`
+- `@vim_ruby.constant.ruby`
+- `@vim_ruby.control.ruby`
+- `@vim_ruby.data.ruby`
+- `@vim_ruby.define.ruby`
+- `@vim_ruby.eval.ruby`
+- `@vim_ruby.exception.ruby`
+- `@vim_ruby.exception_handler.ruby`
+- `@vim_ruby.float.ruby`
+- `@vim_ruby.global_variable.ruby`
+- `@vim_ruby.heredoc_delimiter.ruby`
+- `@vim_ruby.include.ruby`
+- `@vim_ruby.instance_variable.ruby`
+- `@vim_ruby.integer.ruby`
+- `@vim_ruby.interpolation_delimiter.ruby`
+- `@vim_ruby.keyword.ruby`
+- `@vim_ruby.macro.ruby`
+- `@vim_ruby.magic_comment.ruby`
+- `@vim_ruby.method_name.ruby`
+- `@vim_ruby.module.ruby`
+- `@vim_ruby.module_name.ruby`
+- `@vim_ruby.operator.*.ruby`
+- `@vim_ruby.predefined_constant.ruby`
+- `@vim_ruby.predefined_variable.ruby`
+- `@vim_ruby.pseudo_variable.ruby`
+- `@vim_ruby.regexp.ruby`
+- `@vim_ruby.regexp_delimiter.ruby`
+- `@vim_ruby.regexp_special.ruby`
+- `@vim_ruby.repeat.ruby`
+- `@vim_ruby.sharpbang.ruby`
+- `@vim_ruby.string.ruby`
+- `@vim_ruby.string_escape.ruby`
+- `@vim_ruby.symbol.ruby`
+- `@vim_ruby.todo.ruby`
+
+### Rails captures
 
 - `@rails.assertion.ruby`
 - `@rails.attribute.ruby`

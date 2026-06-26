@@ -1,5 +1,331 @@
 ;; extends
 
+; ------------------------------------------------------------------------
+; Vim Ruby syntax groups, translated from syntax/ruby.vim.
+; ------------------------------------------------------------------------
+
+; Declarations and definitions.
+[
+  "alias"
+  "def"
+  "undef"
+] @vim_ruby.define (#set! priority 110)
+
+"class" @vim_ruby.class (#set! priority 110)
+"module" @vim_ruby.module (#set! priority 110)
+
+(method
+  name: (identifier) @vim_ruby.method_name (#set! priority 110))
+(singleton_method
+  name: (identifier) @vim_ruby.method_name (#set! priority 110))
+(alias
+  (identifier) @vim_ruby.method_name (#set! priority 110))
+(setter
+  (identifier) @vim_ruby.method_name (#set! priority 110))
+
+; Keywords and flow control.
+[
+  "break"
+  "next"
+  "redo"
+  "retry"
+  "return"
+] @vim_ruby.control (#set! priority 110)
+
+[
+  "case"
+  "else"
+  "elsif"
+  "if"
+  "unless"
+  "when"
+  "then"
+] @vim_ruby.conditional (#set! priority 110)
+
+[
+  "for"
+  "until"
+  "while"
+] @vim_ruby.repeat (#set! priority 110)
+
+[
+  "rescue"
+  "ensure"
+] @vim_ruby.exception_handler (#set! priority 110)
+
+((begin_block) @vim_ruby.begin_end (#set! priority 110))
+((end_block) @vim_ruby.begin_end (#set! priority 110))
+
+((super) @vim_ruby.keyword (#set! priority 110))
+((yield) @vim_ruby.keyword (#set! priority 110))
+
+; Pseudo variables and built-ins.
+((self) @vim_ruby.pseudo_variable (#set! priority 110))
+((nil) @vim_ruby.pseudo_variable (#set! priority 110))
+[
+  (true)
+  (false)
+] @vim_ruby.boolean (#set! priority 110)
+
+((identifier) @vim_ruby.pseudo_variable
+  (#any-of? @vim_ruby.pseudo_variable "__ENCODING__" "__dir__" "__FILE__" "__LINE__" "__callee__" "__method__")
+  (#set! priority 110))
+
+; Special methods.
+((identifier) @vim_ruby.access
+  (#any-of? @vim_ruby.access
+    "public" "protected" "private" "public_class_method" "private_class_method"
+    "public_constant" "private_constant" "module_function")
+  (#set! priority 110))
+(call
+  method: (identifier) @vim_ruby.access
+  (#any-of? @vim_ruby.access
+    "public" "protected" "private" "public_class_method" "private_class_method"
+    "public_constant" "private_constant" "module_function")
+  (#set! priority 110))
+
+(call
+  method: (identifier) @vim_ruby.attribute
+  (#any-of? @vim_ruby.attribute "attr" "attr_accessor" "attr_reader" "attr_writer")
+  (#set! priority 110))
+
+((identifier) @vim_ruby.control
+  (#any-of? @vim_ruby.control "abort" "at_exit" "exit" "exit!" "fork" "loop" "trap")
+  (#set! priority 110))
+(call
+  method: (identifier) @vim_ruby.control
+  (#any-of? @vim_ruby.control "abort" "at_exit" "exit" "exit!" "fork" "loop" "trap")
+  (#set! priority 110))
+
+((identifier) @vim_ruby.eval
+  (#any-of? @vim_ruby.eval "eval" "class_eval" "instance_eval" "module_eval")
+  (#set! priority 110))
+(call
+  method: (identifier) @vim_ruby.eval
+  (#any-of? @vim_ruby.eval "eval" "class_eval" "instance_eval" "module_eval")
+  (#set! priority 110))
+
+((identifier) @vim_ruby.exception
+  (#any-of? @vim_ruby.exception "raise" "fail" "catch" "throw")
+  (#set! priority 110))
+(call
+  method: (identifier) @vim_ruby.exception
+  (#any-of? @vim_ruby.exception "raise" "fail" "catch" "throw")
+  (#set! priority 110))
+
+((identifier) @vim_ruby.include
+  (#any-of? @vim_ruby.include "autoload" "gem" "load" "require" "require_relative")
+  (#set! priority 110))
+(call
+  method: (identifier) @vim_ruby.include
+  (#any-of? @vim_ruby.include "autoload" "gem" "load" "require" "require_relative")
+  (#set! priority 110))
+
+((identifier) @vim_ruby.keyword
+  (#any-of? @vim_ruby.keyword "callcc" "caller" "lambda" "proc")
+  (#set! priority 110))
+(call
+  method: (identifier) @vim_ruby.keyword
+  (#any-of? @vim_ruby.keyword "callcc" "caller" "lambda" "proc")
+  (#set! priority 110))
+
+((identifier) @vim_ruby.macro
+  (#any-of? @vim_ruby.macro
+    "extend" "include" "prepend" "refine" "using"
+    "alias_method" "define_method" "define_singleton_method" "remove_method" "undef_method")
+  (#set! priority 110))
+(call
+  method: (identifier) @vim_ruby.macro
+  (#any-of? @vim_ruby.macro
+    "extend" "include" "prepend" "refine" "using"
+    "alias_method" "define_method" "define_singleton_method" "remove_method" "undef_method")
+  (#set! priority 110))
+
+; Constants, variables, symbols, and numbers.
+(class
+  name: (constant) @vim_ruby.class_name (#set! priority 105))
+(module
+  name: (constant) @vim_ruby.module_name (#set! priority 105))
+(constant) @vim_ruby.constant
+
+((constant) @vim_ruby.predefined_constant
+  (#any-of? @vim_ruby.predefined_constant
+    "ARGF" "ARGV" "ENV" "DATA" "STDERR" "STDIN" "STDOUT" "TOPLEVEL_BINDING"
+    "RUBY_VERSION" "RUBY_RELEASE_DATE" "RUBY_PLATFORM" "RUBY_PATCHLEVEL" "RUBY_REVISION"
+    "RUBY_DESCRIPTION" "RUBY_COPYRIGHT" "RUBY_ENGINE" "FALSE" "NIL" "TRUE")
+  (#set! priority 110))
+
+(class_variable) @vim_ruby.class_variable
+(instance_variable) @vim_ruby.instance_variable
+(global_variable) @vim_ruby.global_variable
+
+((global_variable) @vim_ruby.predefined_variable
+  (#any-of? @vim_ruby.predefined_variable
+    "$!" "$@" "$$" "$&" "$`" "$'" "$+" "$0" "$/" "$\\" "$," "$;" "$~" "$=" "$:"
+    "$<" "$>" "$." "$?" "$_" "$-0" "$-F" "$-I" "$-K" "$-W" "$-a" "$-d" "$-i" "$-l"
+    "$-p" "$-v" "$-w" "$stderr" "$stdin" "$stdout" "$DEBUG" "$FILENAME" "$LOADED_FEATURES"
+    "$LOAD_PATH" "$PROGRAM_NAME" "$SAFE" "$VERBOSE" "$deferr" "$defout" "$KCODE")
+  (#set! priority 110))
+
+(integer) @vim_ruby.integer
+(float) @vim_ruby.float
+
+[
+  (bare_symbol)
+  (simple_symbol)
+  (hash_key_symbol)
+  (delimited_symbol)
+] @vim_ruby.symbol
+
+; Operators, split according to the optional ruby.vim operator groups.
+[
+  "and"
+  "or"
+  "not"
+] @vim_ruby.operator.english_boolean (#set! priority 110)
+
+[
+  "?"
+  ":"
+] @vim_ruby.operator.ternary (#set! priority 110)
+
+[
+  "**"
+  "*"
+  "/"
+  "%"
+  "+"
+  "-"
+] @vim_ruby.operator.arithmetic (#set! priority 110)
+
+[
+  "<=>"
+  "<="
+  "<"
+  ">="
+  ">"
+] @vim_ruby.operator.comparison (#set! priority 110)
+
+[
+  "~"
+  "^"
+  "|"
+  "&"
+  "<<"
+  ">>"
+] @vim_ruby.operator.bitwise (#set! priority 110)
+
+[
+  "!"
+  "&&"
+  "||"
+] @vim_ruby.operator.boolean (#set! priority 110)
+
+[
+  ".."
+  "..."
+] @vim_ruby.operator.range (#set! priority 110)
+
+[
+  "="
+  "=>"
+  "-="
+  "/="
+  "**="
+  "*="
+  "&&="
+  "&="
+  "||="
+  "|="
+  "%="
+  "+="
+  ">>="
+  "<<="
+  "^="
+] @vim_ruby.operator.assignment (#set! priority 110)
+
+[
+  "==="
+  "=="
+  "!="
+  "!~"
+  "=~"
+] @vim_ruby.operator.equality (#set! priority 110)
+
+[
+  "."
+  "&."
+  "::"
+  "->"
+] @vim_ruby.operator.pseudo (#set! priority 110)
+
+; Strings, regexps, interpolation, and escapes.
+[
+  (string_content)
+  (heredoc_content)
+] @vim_ruby.string
+
+(escape_sequence) @vim_ruby.string_escape
+
+(interpolation
+  "#{" @vim_ruby.interpolation_delimiter
+  "}" @vim_ruby.interpolation_delimiter)
+
+[
+  (heredoc_beginning)
+  (heredoc_end)
+] @vim_ruby.heredoc_delimiter
+
+(regex) @vim_ruby.regexp
+(regex
+  "/" @vim_ruby.regexp_delimiter
+  "/" @vim_ruby.regexp_delimiter)
+(regex
+  (string_content) @vim_ruby.regexp_special)
+
+; Comments and documentation.
+((comment) @vim_ruby.sharpbang
+  (#lua-match? @vim_ruby.sharpbang "^#!")
+  (#set! priority 120))
+
+((comment) @vim_ruby.magic_comment
+  (#lua-match? @vim_ruby.magic_comment "^#%s*[Cc][Oo][Dd][Ii][Nn][Gg]:")
+  (#set! priority 120))
+((comment) @vim_ruby.magic_comment
+  (#lua-match? @vim_ruby.magic_comment "^#%s*[Ee][Nn][Cc][Oo][Dd][Ii][Nn][Gg]:")
+  (#set! priority 120))
+((comment) @vim_ruby.magic_comment
+  (#lua-match? @vim_ruby.magic_comment "^#%s*[Ff][Rr][Oo][Zz][Ee][Nn][-_][Ss][Tt][Rr][Ii][Nn][Gg][-_][Ll][Ii][Tt][Ee][Rr][Aa][Ll]:")
+  (#set! priority 120))
+
+((comment) @vim_ruby.todo
+  (#lua-match? @vim_ruby.todo "FIXME")
+  (#set! priority 120))
+((comment) @vim_ruby.todo
+  (#lua-match? @vim_ruby.todo "NOTE")
+  (#set! priority 120))
+((comment) @vim_ruby.todo
+  (#lua-match? @vim_ruby.todo "TODO")
+  (#set! priority 120))
+((comment) @vim_ruby.todo
+  (#lua-match? @vim_ruby.todo "OPTIMIZE")
+  (#set! priority 120))
+((comment) @vim_ruby.todo
+  (#lua-match? @vim_ruby.todo "HACK")
+  (#set! priority 120))
+((comment) @vim_ruby.todo
+  (#lua-match? @vim_ruby.todo "REVIEW")
+  (#set! priority 120))
+((comment) @vim_ruby.todo
+  (#lua-match? @vim_ruby.todo "XXX")
+  (#set! priority 120))
+
+((comment) @vim_ruby.comment.documentation
+  (#lua-match? @vim_ruby.comment.documentation "^=begin")
+  (#set! priority 120))
+
+(uninterpreted) @vim_ruby.data
+
 ; Rails-wide app macros from rails.vim's application-aware section.
 (call
   method: (identifier) @rails.attribute
