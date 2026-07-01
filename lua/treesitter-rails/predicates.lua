@@ -43,12 +43,12 @@ local function any_match(bufnr, patterns)
 end
 
 local magic_comment_keys = {
-  coding = true,
-  encoding = true,
-  frozen_string_literal = true,
+  coding                   = true,
+  encoding                 = true,
+  frozen_string_literal    = true,
   shareable_constant_value = true,
-  warn_indent = true,
-  warn_past_scope = true,
+  warn_indent              = true,
+  warn_past_scope          = true,
 }
 
 local function parse_magic_comment(text)
