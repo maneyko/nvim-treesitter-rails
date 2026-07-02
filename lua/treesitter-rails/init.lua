@@ -1,7 +1,10 @@
 local M = {}
 
 local defaults = {
-  highlights = true,
+  highlights = {
+    enabled = true,
+    links = {},
+  }
 }
 
 function M.setup(opts)
@@ -9,9 +12,8 @@ function M.setup(opts)
 
   require("treesitter-rails.predicates").setup()
 
-  if opts.highlights then
-    local highlight_opts = type(opts.highlights) == "table" and opts.highlights or {}
-    require("treesitter-rails.highlights").setup(highlight_opts)
+  if opts.highlights.enabled then
+    require("treesitter-rails.highlights").setup(opts.highlights)
   end
 end
 
