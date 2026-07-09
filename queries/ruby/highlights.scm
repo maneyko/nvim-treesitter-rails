@@ -1,10 +1,10 @@
 ;; extends
 
-; ------------------------------------------------------------------------
-; Vim Ruby syntax groups, translated from syntax/ruby.vim.
-; ------------------------------------------------------------------------
+; Vim Ruby syntax groups. This is meant as a complete replacement of the nvim-treesitter Ruby highlight groups.
 
-; https://tree-sitter.github.io/tree-sitter/using-parsers/queries/index.html
+; Treesitter syntax reference:        https://tree-sitter.github.io/tree-sitter/using-parsers/queries/index.html
+; Neovim treesitter highlight groups: https://neovim.io/doc/user/treesitter/#treesitter-highlight
+; nvim-treesitter highlights file:    https://github.com/nvim-treesitter/nvim-treesitter/blob/main/runtime/queries/ruby/highlights.scm
 
 
 ; Declarations and definitions.
@@ -12,19 +12,31 @@
   "alias"
   "def"
   "undef"
-] @vim_ruby.define (#set! priority 110)
+] @keyword.function
 
-"class" @vim_ruby.class (#set! priority 110)
-"module" @vim_ruby.module (#set! priority 110)
+"class"  @keyword.type.class
+"module" @keyword.type.module
 
-(method
-  name: (identifier) @vim_ruby.method_name (#set! priority 120))
-(singleton_method
-  name: (identifier) @vim_ruby.method_name (#set! priority 120))
-(alias
-  (identifier) @vim_ruby.method_name (#set! priority 120))
-(setter
-  (identifier) @vim_ruby.method_name (#set! priority 120))
+; Ensure `end` has same highlight group as `class`, `def`, `module`, etc.
+(class  "end" @keyword.type.class)
+(module "end" @keyword.type.module)
+(method "end" @keyword.function)
+(singleton_method "end" @keyword.function)
+
+; Make `rescue` and `ensure` have same highlight color as `def..end`
+(method           body: (body_statement (rescue "rescue" @keyword.function (#set! priority 105))))
+(method           body: (body_statement (ensure "ensure" @keyword.function (#set! priority 105))))
+(singleton_method body: (body_statement (rescue "rescue" @keyword.function (#set! priority 105))))
+(singleton_method body: (body_statement (ensure "ensure" @keyword.function (#set! priority 105))))
+
+; Class and module names
+(class  name: (constant) @type.class_name)
+(module name: (constant) @type.module_name)
+
+(method           name: (identifier) @function)
+(singleton_method name: (identifier) @function)
+(alias  (identifier) @function)
+(setter (identifier) @function)
 
 ; Keywords and flow control.
 [
@@ -32,8 +44,7 @@
   "next"
   "redo"
   "retry"
-  "return"
-] @vim_ruby.control (#set! priority 110)
+] @keyword.control
 
 [
   "case"
@@ -43,142 +54,108 @@
   "unless"
   "when"
   "then"
-] @vim_ruby.conditional (#set! priority 110)
+] @keyword.conditional
+
+(if "end" @keyword.conditional) ; Ensure `end` has same highlight color as `if`
+(in_clause "in" @keyword.conditional) ; Pattern matching (for `case` statement)
 
 [
   "for"
   "until"
   "while"
-] @vim_ruby.repeat (#set! priority 110)
+] @keyword.repeat
+(call . method: (identifier) @keyword.repeat (#eq? @keyword.repeat "loop"))
+
+[
+  "and"
+  "or"
+  "in"
+  "not"
+] @keyword.operator
 
 [
   "rescue"
   "ensure"
-] @vim_ruby.exception_handler (#set! priority 110)
+] @keyword.exception
 
 ; Top-level `BEGIN` and `END` blocks (like awk)
 [
   (begin_block)
   (end_block)
-] @vim_ruby.begin_end (#set! priority 110)
+] @keyword.routine.global
 
 [
   (super)
   (yield)
-] @vim_ruby.keyword (#set! priority 110)
+  "return"
+] @keyword.return
 
 ; Pseudo variables and built-ins.
 [
   (self)
-  (nil)
-] @vim_ruby.pseudo_variable (#set! priority 110)
+] @variable.builtin
 
 [
   (true)
   (false)
-] @vim_ruby.boolean (#set! priority 110)
+] @boolean
 
-((identifier) @vim_ruby.pseudo_variable
-  (#any-of? @vim_ruby.pseudo_variable "__ENCODING__" "__dir__" "__FILE__" "__LINE__" "__callee__" "__method__")
-  (#set! priority 110))
+(constant) @constant
 
-; Special methods.
-(call .
-  method: (identifier) @vim_ruby.access
-  (#any-of? @vim_ruby.access
-    "public" "protected" "private" "public_class_method" "private_class_method"
-    "public_constant" "private_constant" "module_function")
-  (#set! priority 110))
+((constant) @constant.global.predefined
+  (#any-of? @constant.global.predefined
+     "STDIN" "STDOUT" "STDERR" "ENV" "ARGF" "ARGV" "TOPLEVEL_BINDING" "DATA"
+     "RUBY_VERSION" "RUBY_RELEASE_DATE" "RUBY_PLATFORM" "RUBY_PATCHLEVEL" "RUBY_REVISION"
+     "RUBY_COPYRIGHT" "RUBY_ENGINE" "RUBY_ENGINE_VERSION" "RUBY_DESCRIPTION"
+     "CROSS_COMPILING"
+  )
+)
 
-(call .
-  method: (identifier) @vim_ruby.attribute
-  (#any-of? @vim_ruby.attribute "attr" "attr_accessor" "attr_reader" "attr_writer")
-  (#set! priority 110))
+(class_variable)    @variable.member.class
+(instance_variable) @variable.member.instance
+(global_variable)   @variable.member.global
 
-(call .
-  method: (identifier) @vim_ruby.control
-  (#any-of? @vim_ruby.control "abort" "at_exit" "exit" "exit!" "fork" "loop" "trap")
-  (#set! priority 110))
+((global_variable) @variable.member.global.predefined
+  (#any-of? @variable.member.global.predefined
+    "$!" "$@" "$~" "$&" "$`" "$'" "$+" "$/" "$;" "$\\" "$stdin" "$stdout" "$stderr"
+    "$<" "$>" "$." "$_" "$0" "$*" "$$" "$?" "$LOAD_PATH" "$LOADED_FEATURES" "$FILENAME"
+    "$DEBUG" "$VERBOSE" "$-a" "$-i" "$-l" "$-p"
+  )
+)
 
-(call .
-  method: (identifier) @vim_ruby.eval
-  (#any-of? @vim_ruby.eval "eval" "class_eval" "instance_eval" "module_eval")
-  (#set! priority 110))
+((global_variable) @variable.member.global.predefined
+  (#lua-match? @variable.member.global.predefined "^$[1-9][0-9]*$")
+)
 
-(call .
-  method: (identifier) @vim_ruby.exception
-  (#any-of? @vim_ruby.exception "raise" "fail" "catch" "throw")
-  (#set! priority 110))
-
-(call .
-  method: (identifier) @vim_ruby.include
-  (#any-of? @vim_ruby.include "autoload" "gem" "load" "require" "require_relative")
-  (#set! priority 110))
-
-(call .
-  method: (identifier) @vim_ruby.keyword
-  (#any-of? @vim_ruby.keyword "callcc" "caller" "lambda" "proc")
-  (#set! priority 110))
-
-((identifier) @vim_ruby.macro
-  (#any-of? @vim_ruby.macro
-    "extend" "include" "prepend" "refine" "using"
-    "alias_method" "define_method" "define_singleton_method" "remove_method" "undef_method")
-  (#set! priority 110))
-(call .
-  method: (identifier) @vim_ruby.macro
-  (#any-of? @vim_ruby.macro
-    "extend" "include" "prepend" "refine" "using"
-    "alias_method" "define_method" "define_singleton_method" "remove_method" "undef_method")
-  (#set! priority 110))
-
-; Constants, variables, symbols, and numbers.
-(class
-  name: (constant) @vim_ruby.class_name (#set! priority 105))
-(module
-  name: (constant) @vim_ruby.module_name (#set! priority 105))
-(constant) @vim_ruby.constant
-
-((constant) @vim_ruby.predefined_constant
-  (#any-of? @vim_ruby.predefined_constant
-    "ARGF" "ARGV" "ENV" "DATA" "STDERR" "STDIN" "STDOUT" "TOPLEVEL_BINDING"
-    "RUBY_VERSION" "RUBY_RELEASE_DATE" "RUBY_PLATFORM" "RUBY_PATCHLEVEL" "RUBY_REVISION"
-    "RUBY_DESCRIPTION" "RUBY_COPYRIGHT" "RUBY_ENGINE" "FALSE" "NIL" "TRUE")
-  (#set! priority 110))
-
-(class_variable)    @vim_ruby.class_variable
-(instance_variable) @vim_ruby.instance_variable
-(global_variable)   @vim_ruby.global_variable
-
-((global_variable) @vim_ruby.predefined_variable
-  (#any-of? @vim_ruby.predefined_variable
-    "$!" "$@" "$$" "$&" "$`" "$'" "$+" "$0" "$/" "$\\" "$," "$;" "$~" "$=" "$:"
-    "$<" "$>" "$." "$?" "$_" "$-0" "$-F" "$-I" "$-K" "$-W" "$-a" "$-d" "$-i" "$-l"
-    "$-p" "$-v" "$-w" "$stderr" "$stdin" "$stdout" "$DEBUG" "$FILENAME" "$LOADED_FEATURES"
-    "$LOAD_PATH" "$PROGRAM_NAME" "$SAFE" "$VERBOSE" "$deferr" "$defout" "$KCODE")
-  (#set! priority 110))
-
-(integer) @vim_ruby.integer
-(float)   @vim_ruby.float
+(integer) @number.integer
+(float)   @number.float
+(nil) @constant.builtin.null
 
 [
   (bare_symbol)
   (simple_symbol)
   (hash_key_symbol)
   (delimited_symbol)
-] @vim_ruby.symbol
+] @string.special.symbol
+((bare_string) @string)
 
-; Operators, split according to the optional ruby.vim operator groups.
-[
-  "and"
-  "or"
-  "not"
-] @vim_ruby.operator.english_boolean (#set! priority 110)
+(delimited_symbol (string_content) @string.special.symbol (#set! priority 110))
+(bare_symbol      (string_content) @string.special.symbol (#set! priority 110))
+
+(string_array
+  "%w(" @string.array
+  ")" @string.array
+)
+
+(symbol_array
+  "%i(" @string.special.symbol.array
+  ")" @string.special.symbol.array
+)
 
 [
   "?"
   ":"
-] @vim_ruby.operator.ternary (#set! priority 110)
+] @operator.ternary
 
 [
   "**"
@@ -187,7 +164,7 @@
   "%"
   "+"
   "-"
-] @vim_ruby.operator.arithmetic (#set! priority 110)
+] @operator.arithmetic
 
 [
   "<=>"
@@ -195,7 +172,7 @@
   "<"
   ">="
   ">"
-] @vim_ruby.operator.comparison (#set! priority 110)
+] @operator.comparison
 
 [
   "~"
@@ -204,18 +181,16 @@
   "&"
   "<<"
   ">>"
-] @vim_ruby.operator.bitwise (#set! priority 110)
+] @operator.bitwise
 
 [
   "!"
   "&&"
   "||"
-] @vim_ruby.operator.boolean (#set! priority 110)
+] @operator.boolean
 
-[
-  ".."
-  "..."
-] @vim_ruby.operator.range (#set! priority 110)
+(range [".." "..."] @operator.range)
+((forward_argument) @operator.forward_argument)
 
 [
   "="
@@ -233,7 +208,7 @@
   ">>="
   "<<="
   "^="
-] @vim_ruby.operator.assignment (#set! priority 110)
+] @operator.assignment
 
 [
   "==="
@@ -241,146 +216,222 @@
   "!="
   "!~"
   "=~"
-] @vim_ruby.operator.equality (#set! priority 110)
+] @operator.equality
 
 [
   "."
   "&."
   "::"
   "->"
-] @vim_ruby.operator.pseudo (#set! priority 110)
+] @operator.pseudo
 
 ; Strings, regexps, interpolation, and escapes.
 [
   (string_content)
   (heredoc_content)
-] @vim_ruby.string
+] @string
 
-(escape_sequence) @vim_ruby.string_escape
+(escape_sequence) @string.escape
 
 (interpolation
-  "#{" @vim_ruby.interpolation_delimiter
-  "}" @vim_ruby.interpolation_delimiter)
+  "#{" @punctuation.special
+  "}" @punctuation.special)
 
 [
   (heredoc_beginning)
   (heredoc_end)
-] @vim_ruby.heredoc_delimiter
+] @label
 
-(regex) @vim_ruby.regexp
+(regex) @regexp
 (regex
-  "/" @vim_ruby.regexp_delimiter
-  "/" @vim_ruby.regexp_delimiter)
-(regex
-  (string_content) @vim_ruby.regexp_content)
+  "/" @punctuation.delimiter.regexp
+  "/" @punctuation.delimiter.regexp)
+(regex (string_content) @string.regexp)
 ; TODO: Handle special regex characters
 
-; Comments and documentation.
-((comment) @vim_ruby.sharpbang
-  (#lua-match? @vim_ruby.sharpbang "^#!")
-  (#set! priority 120))
+; End of hard node processing. Start of pseudo node processing:
 
-((comment) @vim_ruby.magic_comment
-  (#lua-match? @vim_ruby.magic_comment "^#%s*[Cc][Oo][Dd][Ii][Nn][Gg]:")
-  (#ruby-magic-comment! @vim_ruby.magic_comment "key")
-  (#set! priority 120))
-((comment) @vim_ruby.magic_comment
-  (#lua-match? @vim_ruby.magic_comment "^#%s*[Ee][Nn][Cc][Oo][Dd][Ii][Nn][Gg]:")
-  (#ruby-magic-comment! @vim_ruby.magic_comment "key")
-  (#set! priority 120))
-((comment) @vim_ruby.magic_comment
-  (#lua-match? @vim_ruby.magic_comment "^#%s*[Ff][Rr][Oo][Zz][Ee][Nn][-_][Ss][Tt][Rr][Ii][Nn][Gg][-_][Ll][Ii][Tt][Ee][Rr][Aa][Ll]:")
-  (#ruby-magic-comment! @vim_ruby.magic_comment "key")
-  (#set! priority 120))
-((comment) @vim_ruby.magic_comment
-  (#lua-match? @vim_ruby.magic_comment "^#%s*[Ww][Aa][Rr][Nn][-_][Ii][Nn][Dd][Ee][Nn][Tt]:")
-  (#ruby-magic-comment! @vim_ruby.magic_comment "key")
-  (#set! priority 120))
-((comment) @vim_ruby.magic_comment
-  (#lua-match? @vim_ruby.magic_comment "^#%s*[Ww][Aa][Rr][Nn][-_][Pp][Aa][Ss][Tt][-_][Ss][Cc][Oo][Pp][Ee]:")
-  (#ruby-magic-comment! @vim_ruby.magic_comment "key")
-  (#set! priority 120))
-((comment) @vim_ruby.magic_comment
-  (#lua-match? @vim_ruby.magic_comment "^#%s*[Ss][Hh][Aa][Rr][Ee][Aa][Bb][Ll][Ee][-_][Cc][Oo][Nn][Ss][Tt][Aa][Nn][Tt][-_][Vv][Aa][Ll][Uu][Ee]:")
-  (#ruby-magic-comment! @vim_ruby.magic_comment "key")
-  (#set! priority 120))
+((identifier) @constant.builtin.keyword
+  (#any-of? @constant.builtin.keyword "__ENCODING__" "__FILE__" "__LINE__")
+)
 
-((comment) @vim_ruby.boolean
-  (#lua-match? @vim_ruby.boolean "^#%s*[Ff][Rr][Oo][Zz][Ee][Nn][-_][Ss][Tt][Rr][Ii][Nn][Gg][-_][Ll][Ii][Tt][Ee][Rr][Aa][Ll]:%s*[Tt][Rr][Uu][Ee]")
-  (#ruby-magic-comment! @vim_ruby.boolean "boolean")
-  (#set! priority 121))
-((comment) @vim_ruby.boolean
-  (#lua-match? @vim_ruby.boolean "^#%s*[Ff][Rr][Oo][Zz][Ee][Nn][-_][Ss][Tt][Rr][Ii][Nn][Gg][-_][Ll][Ii][Tt][Ee][Rr][Aa][Ll]:%s*[Ff][Aa][Ll][Ss][Ee]")
-  (#ruby-magic-comment! @vim_ruby.boolean "boolean")
-  (#set! priority 121))
-((comment) @vim_ruby.boolean
-  (#lua-match? @vim_ruby.boolean "^#%s*[Ww][Aa][Rr][Nn][-_][Ii][Nn][Dd][Ee][Nn][Tt]:%s*[Tt][Rr][Uu][Ee]")
-  (#ruby-magic-comment! @vim_ruby.boolean "boolean")
-  (#set! priority 121))
-((comment) @vim_ruby.boolean
-  (#lua-match? @vim_ruby.boolean "^#%s*[Ww][Aa][Rr][Nn][-_][Ii][Nn][Dd][Ee][Nn][Tt]:%s*[Ff][Aa][Ll][Ss][Ee]")
-  (#ruby-magic-comment! @vim_ruby.boolean "boolean")
-  (#set! priority 121))
-((comment) @vim_ruby.boolean
-  (#lua-match? @vim_ruby.boolean "^#%s*[Ww][Aa][Rr][Nn][-_][Pp][Aa][Ss][Tt][-_][Ss][Cc][Oo][Pp][Ee]:%s*[Tt][Rr][Uu][Ee]")
-  (#ruby-magic-comment! @vim_ruby.boolean "boolean")
-  (#set! priority 121))
-((comment) @vim_ruby.boolean
-  (#lua-match? @vim_ruby.boolean "^#%s*[Ww][Aa][Rr][Nn][-_][Pp][Aa][Ss][Tt][-_][Ss][Cc][Oo][Pp][Ee]:%s*[Ff][Aa][Ll][Ss][Ee]")
-  (#ruby-magic-comment! @vim_ruby.boolean "boolean")
-  (#set! priority 121))
-((comment) @vim_ruby.encoding
-  (#lua-match? @vim_ruby.encoding "^#%s*[Cc][Oo][Dd][Ii][Nn][Gg]:%s*%S+")
-  (#ruby-magic-comment! @vim_ruby.encoding "encoding")
-  (#set! priority 121))
-((comment) @vim_ruby.encoding
-  (#lua-match? @vim_ruby.encoding "^#%s*[Ee][Nn][Cc][Oo][Dd][Ii][Nn][Gg]:%s*%S+")
-  (#ruby-magic-comment! @vim_ruby.encoding "encoding")
-  (#set! priority 121))
-((comment) @vim_ruby.encoding
-  (#lua-match? @vim_ruby.encoding "^#%s*[Ss][Hh][Aa][Rr][Ee][Aa][Bb][Ll][Ee][-_][Cc][Oo][Nn][Ss][Tt][Aa][Nn][Tt][-_][Vv][Aa][Ll][Uu][Ee]:%s*%S+")
-  (#ruby-magic-comment! @vim_ruby.encoding "encoding")
-  (#set! priority 121))
+; Kernel "builtin" methods: https://docs.ruby-lang.org/en/3.4/Kernel.html
+(call .
+  method: (identifier) @function.builtin.querying.magic
+  (#any-of? @function.builtin.querying.magic "__callee__" "__dir__" "__method__")
+)
 
-((comment) @vim_ruby.todo
-  (#lua-match? @vim_ruby.todo "FIXME")
-  (#set! priority 120))
-((comment) @vim_ruby.todo
-  (#lua-match? @vim_ruby.todo "NOTE")
-  (#set! priority 120))
-((comment) @vim_ruby.todo
-  (#lua-match? @vim_ruby.todo "TODO")
-  (#set! priority 120))
-((comment) @vim_ruby.todo
-  (#lua-match? @vim_ruby.todo "OPTIMIZE")
-  (#set! priority 120))
-((comment) @vim_ruby.todo
-  (#lua-match? @vim_ruby.todo "HACK")
-  (#set! priority 120))
-((comment) @vim_ruby.todo
-  (#lua-match? @vim_ruby.todo "REVIEW")
-  (#set! priority 120))
-((comment) @vim_ruby.todo
-  (#lua-match? @vim_ruby.todo "XXX")
-  (#set! priority 120))
+(call .
+  method: (identifier) @function.builtin.querying
+  (#any-of? @function.builtin.querying "caller" "caller_locations")
+)
 
-((comment) @vim_ruby.comment.documentation
-  (#lua-match? @vim_ruby.comment.documentation "^=begin")
-  (#set! priority 120))
+(call .
+  method: (identifier) @function.builtin.exiting
+  (#any-of? @function.builtin.exiting "abort" "at_exit" "exit" "exit!")
+)
 
-(uninterpreted) @vim_ruby.data
+(call .
+  method: (identifier) @function.builtin.exceptions
+  (#any-of? @function.builtin.exceptions "catch" "fail" "raise" "throw")
+)
+
+((identifier) @function.builtin.io
+  (#any-of? @function.builtin.io
+   "binding" "gets" "open" "print" "printf" "putc" "puts" "readline" "readlines" "sleep" "sprintf"
+   "test" "warn"
+   ; "p" "pp" "j" "jj" "y" "select"
+  )
+)
+
+(call .
+  method: (identifier) @function.builtin.procs
+  (#any-of? @function.builtin.procs "lambda" "proc")
+)
+
+(call .
+  method: (identifier) @function.builtin.subprocesses
+  (#any-of? @function.builtin.subprocesses "exec" "fork" "spawn" "system" "syscall" "trap")
+)
+
+(call .
+  method: (identifier) @keyword.import
+  (#any-of? @keyword.import "autoload" "gem" "load" "require" "require_relative")
+)
+
+
+(call .
+  method: (identifier) @function.builtin.eval
+  (#any-of? @function.builtin.eval "eval" "class_eval" "instance_eval" "module_eval")
+)
+
+; Module methods: https://docs.ruby-lang.org/en/3.4/Module.html#method-i-private
+(call .
+  method: (identifier) @keyword.modifier
+  (#any-of? @keyword.modifier "public" "protected" "private")
+)
+
+(call .
+  method: (identifier) @function.builtin.module.attribute
+  (#any-of? @function.builtin.module.attribute "attr" "attr_accessor" "attr_reader" "attr_writer")
+)
+
+(call .
+  method: (identifier) @function.builtin.module.exec
+  (#any-of? @function.builtin.module.exec
+   "alias_method" "class_exec" "module_exec" "define_method" "define_singleton_method"
+   "deprecate_constant" "remove_method" "undef_method"
+  )
+)
+
+(call .
+  method: (identifier) @function.builtin.module.const
+  (#any-of? @function.builtin.module.const "const_defined?" "const_get" "const_set" "remove_const")
+)
+
+(call .
+  method: (identifier) @keyword.import.include
+  (#any-of? @keyword.import.include "extend" "include" "prepend" "refine" "using")
+)
+
+(call .
+  method: (identifier) @keyword.modifier
+  (#any-of? @keyword.modifier
+    "public" "protected" "private" "public_class_method" "private_class_method"
+    "public_constant" "private_constant" "module_function"
+  )
+)
+
+(uninterpreted) @data
+
+; Create target for keyword arguments
+(keyword_parameter name: (identifier) @variable.parameter.keyword)
 
 ; Implicit block parameter: it
-((identifier) @vim_ruby.parameter.block.implicit
-  (#eq? @vim_ruby.parameter.block.implicit "it")
-  (#has-ancestor? @vim_ruby.parameter.block.implicit block do_block)
+((identifier) @variable.parameter.builtin.block.implicit
+  (#eq? @variable.parameter.builtin.block.implicit "it")
+  (#has-ancestor? @variable.parameter.builtin.block.implicit block do_block)
 )
 
 ; Numbered block parameters: _1, _2
-((identifier) @vim_ruby.parameter.block.numbered
-  (#lua-match? @vim_ruby.parameter.block.numbered "^_[1-9]$")
-  (#has-ancestor? @vim_ruby.parameter.block.numbered block do_block)
+((identifier) @variable.parameter.builtin.block.numbered
+  (#lua-match? @variable.parameter.builtin.block.numbered "^_[1-9]$")
+  (#has-ancestor? @variable.parameter.builtin.block.numbered block do_block)
 )
+
+((comment) @comment.documentation
+  (#lua-match? @comment.documentation "^=begin")
+)
+
+((comment) @comment.magic
+  (#lua-match? @comment.magic "^#%s*[Cc][Oo][Dd][Ii][Nn][Gg]:")
+  (#ruby-magic-comment! @comment.magic "key")
+)
+((comment) @comment.magic
+  (#lua-match? @comment.magic "^#%s*[Ee][Nn][Cc][Oo][Dd][Ii][Nn][Gg]:")
+  (#ruby-magic-comment! @comment.magic "key")
+)
+((comment) @comment.magic
+  (#lua-match? @comment.magic "^#%s*[Ff][Rr][Oo][Zz][Ee][Nn][-_][Ss][Tt][Rr][Ii][Nn][Gg][-_][Ll][Ii][Tt][Ee][Rr][Aa][Ll]:")
+  (#ruby-magic-comment! @comment.magic "key")
+)
+((comment) @comment.magic
+  (#lua-match? @comment.magic "^#%s*[Ww][Aa][Rr][Nn][-_][Ii][Nn][Dd][Ee][Nn][Tt]:")
+  (#ruby-magic-comment! @comment.magic "key")
+)
+((comment) @comment.magic
+  (#lua-match? @comment.magic "^#%s*[Ww][Aa][Rr][Nn][-_][Pp][Aa][Ss][Tt][-_][Ss][Cc][Oo][Pp][Ee]:")
+  (#ruby-magic-comment! @comment.magic "key")
+)
+((comment) @comment.magic
+  (#lua-match? @comment.magic "^#%s*[Ss][Hh][Aa][Rr][Ee][Aa][Bb][Ll][Ee][-_][Cc][Oo][Nn][Ss][Tt][Aa][Nn][Tt][-_][Vv][Aa][Ll][Uu][Ee]:")
+  (#ruby-magic-comment! @comment.magic "key")
+)
+
+((comment) @boolean
+  (#lua-match? @boolean "^#%s*[Ff][Rr][Oo][Zz][Ee][Nn][-_][Ss][Tt][Rr][Ii][Nn][Gg][-_][Ll][Ii][Tt][Ee][Rr][Aa][Ll]:%s*[Tt][Rr][Uu][Ee]")
+  (#ruby-magic-comment! @boolean "boolean")
+)
+((comment) @boolean
+  (#lua-match? @boolean "^#%s*[Ff][Rr][Oo][Zz][Ee][Nn][-_][Ss][Tt][Rr][Ii][Nn][Gg][-_][Ll][Ii][Tt][Ee][Rr][Aa][Ll]:%s*[Ff][Aa][Ll][Ss][Ee]")
+  (#ruby-magic-comment! @boolean "boolean")
+)
+((comment) @boolean
+  (#lua-match? @boolean "^#%s*[Ww][Aa][Rr][Nn][-_][Ii][Nn][Dd][Ee][Nn][Tt]:%s*[Tt][Rr][Uu][Ee]")
+  (#ruby-magic-comment! @boolean "boolean")
+)
+((comment) @boolean
+  (#lua-match? @boolean "^#%s*[Ww][Aa][Rr][Nn][-_][Ii][Nn][Dd][Ee][Nn][Tt]:%s*[Ff][Aa][Ll][Ss][Ee]")
+  (#ruby-magic-comment! @boolean "boolean")
+)
+((comment) @boolean
+  (#lua-match? @boolean "^#%s*[Ww][Aa][Rr][Nn][-_][Pp][Aa][Ss][Tt][-_][Ss][Cc][Oo][Pp][Ee]:%s*[Tt][Rr][Uu][Ee]")
+  (#ruby-magic-comment! @boolean "boolean")
+)
+((comment) @boolean
+  (#lua-match? @boolean "^#%s*[Ww][Aa][Rr][Nn][-_][Pp][Aa][Ss][Tt][-_][Ss][Cc][Oo][Pp][Ee]:%s*[Ff][Aa][Ll][Ss][Ee]")
+  (#ruby-magic-comment! @boolean "boolean")
+)
+((comment) @encoding
+  (#lua-match? @encoding "^#%s*[Cc][Oo][Dd][Ii][Nn][Gg]:%s*%S+")
+  (#ruby-magic-comment! @encoding "encoding")
+)
+((comment) @encoding
+  (#lua-match? @encoding "^#%s*[Ee][Nn][Cc][Oo][Dd][Ii][Nn][Gg]:%s*%S+")
+  (#ruby-magic-comment! @encoding "encoding")
+)
+((comment) @encoding
+  (#lua-match? @encoding "^#%s*[Ss][Hh][Aa][Rr][Ee][Aa][Bb][Ll][Ee][-_][Cc][Oo][Nn][Ss][Tt][Aa][Nn][Tt][-_][Vv][Aa][Ll][Uu][Ee]:%s*%S+")
+  (#ruby-magic-comment! @encoding "encoding")
+)
+
+((comment) @comment.todo (#lua-match? @comment.todo "FIXME")    )
+((comment) @comment.todo (#lua-match? @comment.todo "NOTE")     )
+((comment) @comment.todo (#lua-match? @comment.todo "TODO")     )
+((comment) @comment.todo (#lua-match? @comment.todo "OPTIMIZE") )
+((comment) @comment.todo (#lua-match? @comment.todo "HACK")     )
+((comment) @comment.todo (#lua-match? @comment.todo "REVIEW")   )
+((comment) @comment.todo (#lua-match? @comment.todo "XXX")      )
 
 ; Rails-wide app macros from rails.vim's application-aware section.
 (call .
@@ -670,7 +721,10 @@
 ))
 ((#is-rspec-or-cucumber?)
   (call .
-    method: (identifier) @rails.test.helper
+    [
+      method: (identifier)
+      receiver: (identifier)
+    ] @rails.test.helper
     (#any-of? @rails.test.helper
       "described_class" "double" "instance_double" "class_double" "object_double" "spy" "instance_spy"
       "class_spy" "object_spy"
